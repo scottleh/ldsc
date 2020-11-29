@@ -10,8 +10,6 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-
-
 import ldscore.parse as ps
 import ldscore.regressions as reg
 
@@ -421,8 +419,7 @@ def estimate_rg(args, log):
         except Exception:  # keep going if phenotype 50/100 causes an error
             msg = 'ERROR computing rg for phenotype {I}/{N}, from file {F}.'
             log.log(msg.format(I=i + 2, N=len(rg_paths), F=rg_paths[i + 1]))
-            ex_type, ex, tb = sys.exc_info()
-            log.log(traceback.format_exc(ex) + '\n')
+            traceback.print_exc(file=log.log_fh)
             if len(RG) <= i:  # if exception raised before appending to RG
                 RG.append(None)
 
@@ -453,8 +450,8 @@ def _get_rg_table(rg_paths, RG, args):
     '''Print a table of genetic correlations.'''
     t = lambda attr: lambda obj: getattr(obj, attr, 'NA')
     x = pd.DataFrame()
-    x['p1'] = [rg_paths[0] for i in range(1, len(rg_paths))]
-    x['p2'] = rg_paths[1:len(rg_paths)]
+    x['p1'] = [rg_paths[0].split(os.sep)[-1]] * (len(rg_paths)-1)
+    x['p2'] = [p2.split(os.sep)[-1] for p2 in rg_paths[1:]]
     x['rg'] = list(map(t('rg_ratio'), RG))
     x['se'] = list(map(t('rg_se'), RG))
     x['z'] = list(map(t('z'), RG))
